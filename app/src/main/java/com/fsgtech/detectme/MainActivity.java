@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Handler;
@@ -24,11 +25,10 @@ import com.fsgtech.detectme.credentials.EmailAuthentication;
 import com.fsgtech.detectme.emailsending.SendMailTask;
 import com.fsgtech.detectme.listeners.MyLocationListener;
 import com.fsgtech.detectme.listeners.MyPhoneStateListener;
+import com.fsgtech.detectme.receiver.NetworkChangeReceiver;
 import com.jaredrummler.android.device.DeviceName;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity  {
@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity  {
 
     ArrayAdapterDisplay listViewArrayAdapter;
 
+    NetworkChangeReceiver networkChangeReceiver;
+    IntentFilter intentFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,8 @@ public class MainActivity extends AppCompatActivity  {
         setContentView(R.layout.activity_main);
 
         context = this;
+        networkChangeReceiver =  new NetworkChangeReceiver();
+        intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
 
         listView = (ListView) findViewById(R.id.listview);
         button = (Button) findViewById(R.id.sendButton);
@@ -83,7 +87,7 @@ public class MainActivity extends AppCompatActivity  {
         deviceName = deviceInfo.getName();
 
         if (checkNetworkStatus(context).equals("Not Connected")) {
-            showSettingsAlert();
+//            showSettingsAlert();
         }
 
         refresh = new Runnable() {
@@ -117,7 +121,18 @@ public class MainActivity extends AppCompatActivity  {
             }
         });
 
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(networkChangeReceiver);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(networkChangeReceiver, intentFilter);
     }
 
     @Override
@@ -130,7 +145,10 @@ public class MainActivity extends AppCompatActivity  {
     protected void onStop() {
         super.onStop();
         myLocationListener.dconnGAC();
+        finish();
     }
+
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -216,7 +234,7 @@ public class MainActivity extends AppCompatActivity  {
         alertDialog.show();
     }
 
-    private String checkNetworkStatus(Context context) {
+    public String checkNetworkStatus(Context context) {
 
         String networkStatus = "";
         final ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -315,7 +333,7 @@ public class MainActivity extends AppCompatActivity  {
     public void sendEmail(){
         EmailAuthentication EA = new EmailAuthentication();
         String toEmail = "jomari.benito@digipay.ph";
-        String emailSubject = "Detect Me ";
+        String emailSubject = "DIGIPAY - Detect Me ";
 
         ArrayList<String> col = new ArrayList<String>();
         for (int i = 0 ; i<=listView.getChildCount() - 1; i++) {

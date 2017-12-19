@@ -19,8 +19,8 @@ import java.util.ArrayList;
 
 public class ArrayAdapterDisplay extends ArrayAdapter {
 
-    Context context;
-    ArrayList<String> title =  new ArrayList<>();
+    private Context context;
+    private ArrayList<String> title =  new ArrayList<>();
     ArrayList<String> desc =  new ArrayList<>();
 
     public ArrayAdapterDisplay(Context context, ArrayList<String> title, ArrayList<String> desc) {
